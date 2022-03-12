@@ -1,0 +1,9 @@
+x_min = 80
+x_max = -80
+Mx = 101
+y_min = 80
+y_max = -80
+My = 151
+z_min = 80
+z_max = -80
+Mz = 301
