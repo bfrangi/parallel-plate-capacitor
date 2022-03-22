@@ -5,14 +5,18 @@ from numba import jit, njit
 from time import time as t
 
 # SPACE AND TIME VECTORS
-def generate_vector(vec_min, vec_max, Mv, Dv):
-	v = np.array([])
+#@njit #---> Works, but as it is only called once, it is faster to
+def generate_vector(vec_min:float, vec_max:float, Mv:int, Dv:float, v:np.array=np.array([])) -> np.array:
+	#v = np.array([])
 	#Dv = (vec_max - vec_min) / (Mv - 1)
 	for k in range(Mv):
 		v = np.append(v, [vec_min + k*Dv])
 	return v
 
-def create_mesh(x, y, z):
+from numba.typed import List
+
+#@njit #---> Not working yet
+def create_mesh(x:np.array, y:np.array, z:np.array, mesh:list=[], this_x:list=[], this_y:list=[]) -> np.array:
 	mesh = []
 	for j in range(len(x)):
 		this_x = []
@@ -20,11 +24,13 @@ def create_mesh(x, y, z):
 			this_y = []
 			for l in range(len(z)):
 				this_y.append(initial_potential(j, k, l))
+				#this_y.append(10.)
 			this_x.append(this_y)
 		mesh.append(this_x)
 	return np.array(mesh)
 
-def initial_potential(j, k, l):
+#@njit #---> Works, but is no faster than with no @njit
+def initial_potential(j:int, k:int, l:int) -> float:
 	edge_x = [0, Mx - 1]
 	edge_y = [0, My - 1]
 	edge_z = [0, Mz - 1]
@@ -115,7 +121,8 @@ def print_x_cut(j, mesh, show_zeros=False, rounding='no'):
 					print(" ", end="")
 		print("")
 
-def stencil_average(j, k, l, mesh):
+@njit # Works, faster with njit
+def stencil_average(j:int, k:int, l:int, mesh:np.array) -> tuple:
 	top = mesh[j, k, l + 1]
 	bottom = mesh[j, k, l - 1]
 	left = mesh[j - 1, k, l]
@@ -129,7 +136,8 @@ def stencil_average(j, k, l, mesh):
 
 	return (top + bottom + left + right + forward + backward)/6, residual
 
-def updated_potential(j, k, l, mesh):
+@njit # Works, much faster with njit
+def updated_potential(j:int, k:int, l:int, mesh:np.array) -> tuple:
 	edge_x = [0, Mx - 1]
 	edge_y = [0, My - 1]
 	edge_z = [0, Mz - 1]
@@ -143,16 +151,16 @@ def updated_potential(j, k, l, mesh):
 		return Vbox, 0
 	elif k in plates_y and l in plates_z:
 		if j == plate1_x:
-			return V1, 0# (Zero is the residual)
+			return float(V1), 0.# (Zero is the residual)
 		elif j == plate2_x:
-			return V2, 0# (Zero is the residual)
+			return float(V2), 0.# (Zero is the residual)
 		else:
 			return stencil_average(j, k, l, mesh)
 	else:
 		return stencil_average(j, k, l, mesh)
 
-#@njit
-def update_potential(mesh):
+@njit # Works, much faster with njit
+def update_potential(mesh:np.array) -> tuple:
 	x_len = len(mesh)
 	y_len = len(mesh[0, :, :])
 	z_len = len(mesh[0, 0, :])
@@ -178,6 +186,7 @@ def import_matrix(filename='potential_matrix.npy'):
 	return matrix
 
 def compute_potential_matrix(save=True):
+	start_time = t()
 	x = generate_vector(x_min, x_max, Mx, Dx)
 	y = generate_vector(y_min, y_max, My, Dy)
 	z = generate_vector(z_min, z_max, Mz, Dz)
@@ -200,13 +209,15 @@ def compute_potential_matrix(save=True):
 		if residual < Rtol:
 			reached_tolerance = True
 	print("Done. Final Residual: " + str(round(residual, 3)))
+	computation_time = t() - start_time
+	print("Total Computation Time:", computation_time, "s")
 	if save:
 		export_matrix(mesh)
 
 	return mesh
 
 # MAIN FUNCTION
-if __name__=="__main__":
+if __name__=="__main__2":
 	print("Choose an option:")
 	print("1. Compute the potential matrix from scratch")
 	print("2. Import the potential matrix from a file")
@@ -238,3 +249,11 @@ if __name__=="__main__":
 	#print_x_cut(int((x2-x_min)/Dx), mesh)
 	#print_x_cut(mesh_center[0], mesh)
 
+if __name__=="__main__":
+	matrix = compute_potential_matrix()
+	
+
+	#start_time = t()
+	#mesh = compute_potential_matrix()
+	#computation_time = t() - start_time
+	#print("Time taken:", computation_time, "s")
