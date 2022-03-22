@@ -3,6 +3,7 @@ import numpy as np
 import re
 from numba import jit, njit
 from time import time as t
+import matplotlib.pyplot as plt
 
 # SPACE AND TIME VECTORS
 #@njit #---> Works, but as it is only called once, it is faster to
@@ -216,6 +217,68 @@ def compute_potential_matrix(save=True):
 
 	return mesh
 
+def plot_data(x, y, headers, title, relzoom=1, save=False):
+	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
+	ax.set_xlabel(headers["x"])
+	ax.set_ylabel(headers["y"])
+	ax.set_title(title)
+
+	ax.plot(x, y, color = 'blue')
+
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
+
+	if save:
+		figure_filename = re.sub(r'[\_\$]', r'', title ) + '.pdf'
+		plt.savefig(figure_filename, bbox_inches='tight')
+		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		print("Saved figure to", f)
+
+	plt.show()
+
+
+def infinite_ppc_potential(x):
+	if -d/2 <= x <= d/2:
+		return V2 + (V1-V2) * (d - 2*x) / (2*d)
+	elif x < -d/2:
+		return V1
+	else:
+		return V2
+
+def exercise_1(mesh, x, relzoom=1, save=False):
+	mesh_center = find_center(mesh)
+	axes = [
+		(mesh_center[1], mesh_center[2], "O", "blue"), 
+		(mesh_center[1], int((ymax-y_min)/Dy), "A", "red"), 
+		(mesh_center[1], int((zmax-z_min)/Dz), "B", "green")
+	]
+	x = generate_vector(x_min, x_max, Mx, Dx)
+
+	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
+	for y_index, z_index, name, color in axes:
+		y = mesh[:, y_index, z_index]
+		ax.plot(x, y, label="Axis $" + name + "$", marker='o', color = color)
+
+	y = [infinite_ppc_potential(x_val) for x_val in x]
+	ax.plot(x, y, label="Infinite PPC", marker='o', color = 'black')
+
+	ax.legend()
+	ax.axvspan(-d/2, d/2, alpha=0.3, color='blue')
+	ax.set_title("Potential in the $x$ Direction Along Different Axes")
+	ax.set_xlabel("x (cm)")
+	ax.set_ylabel("Potential (V)")
+
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
+
+	if save:
+		figure_filename = re.sub(r'[\_\$]', r'', title ) + '.pdf'
+		plt.savefig(figure_filename, bbox_inches='tight')
+		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		print("Saved figure to", f)
+	
+	plt.show()
+
 # MAIN FUNCTION
 if __name__=="__main__2":
 	print("Choose an option:")
@@ -231,10 +294,7 @@ if __name__=="__main__2":
 		#mesh_center = find_center(mesh)	
 		#print(mesh)
 	elif choice == "2":
-		start_time = t()
 		mesh = import_matrix()
-		import_time = t() - start_time
-		print("Time taken:", import_time, "s")
 
 		#mesh_center = find_center(mesh)	
 		#print(mesh)
@@ -250,10 +310,6 @@ if __name__=="__main__2":
 	#print_x_cut(mesh_center[0], mesh)
 
 if __name__=="__main__":
-	matrix = compute_potential_matrix()
-	
-
-	#start_time = t()
-	#mesh = compute_potential_matrix()
-	#computation_time = t() - start_time
-	#print("Time taken:", computation_time, "s")
+	mesh = import_matrix()
+	x = generate_vector(x_min, x_max, Mx, Dx)
+	exercise_1(mesh, x)
