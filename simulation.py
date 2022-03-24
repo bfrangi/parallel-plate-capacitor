@@ -31,16 +31,13 @@ def update_potential(mesh):
 	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
 	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
 
-	x_len = len(mesh)
-	y_len = len(mesh[0, :, :])
-	z_len = len(mesh[0, 0, :])
-	new_mesh = np.zeros((x_len, y_len, z_len))
-	new_mesh[1:x_len-1, 1: y_len-1,1:z_len-1] = (mesh[0:x_len-2, 1: y_len-1,1:z_len-1] + \
-												mesh[2:x_len, 1: y_len-1,1:z_len-1] + \
-												mesh[1:x_len-1, 0: y_len-2,1:z_len-1] + \
-												mesh[1:x_len-1, 2: y_len,1:z_len-1] + \
-												mesh[1:x_len-1, 1: y_len-1,0:z_len-2] + \
-												mesh[1:x_len-1, 1: y_len-1,2:z_len])/6
+	new_mesh = np.zeros((Mx, My, Mz))
+	new_mesh[1:Mx-1, 1: My-1,1:Mz-1] = (mesh[0:Mx-2, 1: My-1,1:Mz-1] + \
+										mesh[2:Mx, 1: My-1,1:Mz-1] + \
+										mesh[1:Mx-1, 0: My-2,1:Mz-1] + \
+										mesh[1:Mx-1, 2: My,1:Mz-1] + \
+										mesh[1:Mx-1, 1: My-1,0:Mz-2] + \
+										mesh[1:Mx-1, 1: My-1,2:Mz])/6
 
 	new_mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
 	new_mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
