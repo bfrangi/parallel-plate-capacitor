@@ -6,166 +6,26 @@ from time import time as t
 import matplotlib.pyplot as plt
 import os
 
-# SPACE AND TIME VECTORS
-#@njit #---> Works, but as it is only called once, it is faster to
-def generate_vector(vec_min:float, vec_max:float, Mv:int, Dv:float, v:np.array=np.array([])) -> np.array:
-	#v = np.array([])
-	#Dv = (vec_max - vec_min) / (Mv - 1)
-	for k in range(Mv):
-		v = np.append(v, [vec_min + k*Dv])
-	return v
 
-from numba.typed import List
-
-#@njit #---> Not working yet
-def create_mesh(x:np.array, y:np.array, z:np.array, mesh:list=[], this_x:list=[], this_y:list=[]) -> np.array:
-	mesh = []
-	for j in range(len(x)):
-		this_x = []
-		for k in range(len(y)):
-			this_y = []
-			for l in range(len(z)):
-				this_y.append(initial_potential(j, k, l))
-				#this_y.append(10.)
-			this_x.append(this_y)
-		mesh.append(this_x)
-	return np.array(mesh)
-
-#@njit #---> Works, but is no faster than with no @njit
-def initial_potential(j:int, k:int, l:int) -> float:
-	edge_x = [0, Mx - 1]
-	edge_y = [0, My - 1]
-	edge_z = [0, Mz - 1]
-
+def create_mesh():
 	plate1_x = int((x1-x_min)/Dx)
 	plate2_x = int((x2-x_min)/Dx)
-	plates_y = range(int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
-	plates_z = range(int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
+	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
+	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
+	
+	mesh = np.zeros((Mx, My, Mz))
+	mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
+	mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
 
-	if j in edge_x or k in edge_y or l in edge_z:
-		return float(Vbox)
-	elif k in plates_y and l in plates_z:
-		if j == plate1_x:
-			return float(V1)
-		elif j == plate2_x:
-			return float(V2)
-		else: 
-			return 0.
-	else:
-		return 0.
+	return mesh
 
 def find_center(mesh):
 	x_len = len(mesh)
 	y_len = len(mesh[0, :, :])
 	z_len = len(mesh[0, 0, :])
 	return (int(x_len/2), int(y_len/2), int(z_len/2))
-	
-def print_z_cut(l, mesh, show_zeros=False, rounding='no'):
-	x_len = len(mesh)
-	y_len = len(mesh[0, :, :])
-	for j in range(x_len):
-		for k in range(y_len):
-			if show_zeros:
-				if rounding=='no':
-					print(mesh[j, k, l], end=" ")
-				else:
-					print(round(mesh[j, k, l], rounding), end=" ")
-			else:
-				m = mesh[j, k, l]
-				if m != 0:
-					if rounding=='no':
-						print(m, end=" ")
-					else:
-						print(round(m, rounding), end=" ")
-				else:
-					print(" ", end="")
-		print("")
 
-def print_y_cut(k, mesh, show_zeros=False, rounding='no'):
-	x_len = len(mesh)
-	z_len = len(mesh[0, 0, :])
-	for j in range(x_len):
-		for l in range(z_len):
-			if show_zeros:
-				if rounding=='no':
-					print(mesh[j, k, l], end=" ")
-				else:
-					print(round(mesh[j, k, l], rounding), end=" ")
-			else:
-				m = mesh[j, k, l]
-				if m != 0:
-					if rounding=='no':
-						print(m, end=" ")
-					else:
-						print(round(m, rounding), end=" ")
-				else:
-					print(" ", end="")
-		print("")
-
-def print_x_cut(j, mesh, show_zeros=False, rounding='no'):
-	y_len = len(mesh[0])
-	z_len = len(mesh[0, 0, :])
-	for k in range(y_len):
-		for l in range(z_len):
-			if show_zeros:
-				if rounding=='no':
-					print(mesh[j, k, l], end=" ")
-				else:
-					print(round(mesh[j, k, l], rounding), end=" ")
-			else:
-				m = mesh[j, k, l]
-				if m != 0:
-					if rounding=='no':
-						print(m, end=" ")
-					else:
-						print(round(m, rounding), end=" ")
-				else:
-					print(" ", end="")
-		print("")
-
-@njit # Works, faster with njit
-def stencil_average(j:int, k:int, l:int, mesh:np.array) -> tuple:
-	top = mesh[j, k, l + 1]
-	bottom = mesh[j, k, l - 1]
-	left = mesh[j - 1, k, l]
-	right = mesh[j + 1, k, l]
-	forward = mesh[j, k + 1, l]
-	backward = mesh[j, k - 1, l]
-	current = mesh[j, k, l]
-
-	new = (top + bottom + left + right + forward + backward)/6
-	residual = abs(current - new)
-
-	return (top + bottom + left + right + forward + backward)/6, residual
-
-@njit # Works, much faster with njit
-def updated_potential(j:int, k:int, l:int, mesh:np.array) -> tuple:
-	edge_x = [0, Mx - 1]
-	edge_y = [0, My - 1]
-	edge_z = [0, Mz - 1]
-
-	plate1_x = int((x1-x_min)/Dx)
-	plate2_x = int((x2-x_min)/Dx)
-	plates_y = range(int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1) 
-	plates_z = range(int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
-
-	if j in edge_x or k in edge_y or l in edge_z:
-		return Vbox, 0
-	elif k in plates_y and l in plates_z:
-		if j == plate1_x:
-			return float(V1), 0.# (Zero is the residual)
-		elif j == plate2_x:
-			return float(V2), 0.# (Zero is the residual)
-		else:
-			return stencil_average(j, k, l, mesh)
-	else:
-		return stencil_average(j, k, l, mesh)
-
-def update_potential(mesh:np.array) -> tuple:
-	edge_x = [0, Mx - 1]
-	edge_y = [0, My - 1]
-	edge_z = [0, Mz - 1]
-
+def update_potential(mesh):
 	plate1_x = int((x1-x_min)/Dx)
 	plate2_x = int((x2-x_min)/Dx)
 	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
@@ -174,7 +34,7 @@ def update_potential(mesh:np.array) -> tuple:
 	x_len = len(mesh)
 	y_len = len(mesh[0, :, :])
 	z_len = len(mesh[0, 0, :])
-	new_mesh = np.empty((x_len, y_len, z_len))
+	new_mesh = np.zeros((x_len, y_len, z_len))
 	new_mesh[1:x_len-1, 1: y_len-1,1:z_len-1] = (mesh[0:x_len-2, 1: y_len-1,1:z_len-1] + \
 												mesh[2:x_len, 1: y_len-1,1:z_len-1] + \
 												mesh[1:x_len-1, 0: y_len-2,1:z_len-1] + \
@@ -184,23 +44,9 @@ def update_potential(mesh:np.array) -> tuple:
 
 	new_mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
 	new_mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
-	max_res = np.amax(abs(mesh - new_mesh))
+	max_res = np.amax(np.absolute(mesh - new_mesh))
 
 	return new_mesh, max_res
-
-@njit # Works, much faster with njit
-def update_potential_old(mesh:np.array) -> tuple:
-	x_len = len(mesh)
-	y_len = len(mesh[0, :, :])
-	z_len = len(mesh[0, 0, :])
-	max_res = 0
-	for j in range(x_len):
-		for k in range(y_len):
-			for l in range(z_len):
-				mesh[j, k, l], residual = updated_potential(j, k, l, mesh)
-				if residual > max_res:
-					max_res = residual
-	return mesh, max_res
 
 def export_matrix(matrix, filename='potential_matrix.npy'):
 	f = open(filename, 'wb')
@@ -214,55 +60,52 @@ def import_matrix(filename='potential_matrix.npy'):
 	return matrix
 
 def compute_potential_matrix(save=True):
-	start_time = t()
-	x = generate_vector(x_min, x_max, Mx, Dx)
-	y = generate_vector(y_min, y_max, My, Dy)
-	z = generate_vector(z_min, z_max, Mz, Dz)
+	# CREATE SPACE AND TIME VECTORS
+	time = t()
+	x = np.linspace(x_min, x_max, num=Mx)
+	y = np.linspace(y_min, y_max, num=My)
+	z = np.linspace(z_min, z_max, num=Mz)
+	print("\nCreated x, y, z vectors. Time taken:", t()-time, "s")
 
-	mesh = create_mesh(x, y, z)
+	# CREATE INITIAL VECTOR MATRIX
+	time=t()
+	mesh = create_mesh()
+	print("Created initial potential matrix. Time taken:", t()-time, "s")
 	
+	# DEFINE CONTROL PARAMETERS FOR ALGORITHM
 	prev_residual = 0
 	residual = 1000# (any value different to the prev_residual)
-	reached_tolerance = False
-	iteration_number = 1
+	iteration_number = 2
 
-	while residual != prev_residual and not reached_tolerance:
+	# ITERATE TO UPDATE POTENTIAL
+	start_time = t()
+	print("\n1. Computing relaxation of potential...")
+	mesh, residual = update_potential(mesh)
+
+	while not (residual < Rtol) and residual != prev_residual:
 		prev_residual = residual
-		if iteration_number == 1:
-			print("1. Computing relaxation of potential...")
-		else:
-			print(str(iteration_number) + ". Computing relaxation of potential... (Previous Residual: " + str(round(prev_residual, 3)) + ")")
+		#print(iteration_number, "- Computing relaxation of potential... ( Previous Residual:", round(prev_residual, 3),")")
+		#iteration_number += 1
 		mesh, residual = update_potential(mesh)
-		iteration_number += 1
-		if residual < Rtol:
-			reached_tolerance = True
-	print("Done. Final Residual: " + str(round(residual, 3)))
+	
 	computation_time = t() - start_time
+	print("Done. Final Residual: " + str(round(residual, 3)))
+
+	# PRINT REASON FOR ENDING ALGORITHM
+	if (residual < Rtol):
+		reason ="Reached Tolerance"
+	else:
+		reason ="Reached Constant Residual"
+	print("Stop Condition:", reason)
+
+	# PRINT TOTAL COMPUTATION TIME
 	print("Total Computation Time:", computation_time, "s")
+
+	#SAVE THE MATRIX
 	if save:
 		export_matrix(mesh)
 
 	return mesh
-
-def plot_data(x, y, headers, title, relzoom=1, save=False):
-	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
-	ax.set_xlabel(headers["x"])
-	ax.set_ylabel(headers["y"])
-	ax.set_title(title)
-
-	ax.plot(x, y, color = 'blue')
-
-	figManager = plt.get_current_fig_manager()
-	figManager.window.showMaximized()
-
-	if save == "Y":
-		figure_filename = re.sub(r'[\_\$]', r'', title ) + '.pdf'
-		plt.savefig(figure_filename, bbox_inches='tight')
-		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
-		print("Saved figure to", f)
-
-	plt.show()
-
 
 def infinite_ppc_potential(x):
 	if -d/2 <= x <= d/2:
@@ -279,7 +122,7 @@ def exercise_1(mesh, relzoom=1, save=False):
 		(mesh_center[1], int((ymax-y_min)/Dy), "A", "red"), 
 		(mesh_center[1], int((zmax-z_min)/Dz), "B", "green")
 	]
-	x = generate_vector(x_min, x_max, Mx, Dx)
+	x = np.linspace(x_min, x_max, num=Mx)
 
 	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
 	for y_index, z_index, name, color in axes:
@@ -313,7 +156,7 @@ def exercise_2(mesh, relzoom=1, save=False):
 		(mesh_center[1], int((ymax-y_min)/Dy), "A", "red"), 
 		(mesh_center[1], int((zmax-z_min)/Dz), "B", "green")
 	]
-	x = generate_vector(x_min, x_max, Mx, Dx)
+	x = np.linspace(x_min, x_max, num=Mx)
 
 	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
 	for y_index, z_index, name, color in axes:
@@ -365,14 +208,6 @@ if __name__=="__main__":
 		pass
 	else:
 		print("Invalid Choice")
-
-
-
-	#print_z_cut(mesh_center[2], mesh)
-	#print_y_cut(mesh_center[1], mesh)
-	#print_x_cut(int((x1-x_min)/Dx), mesh)
-	#print_x_cut(int((x2-x_min)/Dx), mesh)
-	#print_x_cut(mesh_center[0], mesh)
 
 if __name__=="__main__2":
 	mesh = import_matrix()
