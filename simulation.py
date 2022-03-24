@@ -84,8 +84,8 @@ def compute_potential_matrix(save=True):
 
 	while not (residual < Rtol) and residual != prev_residual:
 		prev_residual = residual
-		#print(iteration_number, "- Computing relaxation of potential... ( Previous Residual:", round(prev_residual, 3),")")
-		#iteration_number += 1
+		print(iteration_number, "- Computing relaxation of potential... ( Previous Residual:", round(prev_residual, 3),")")
+		iteration_number += 1
 		mesh, residual = update_potential(mesh)
 	
 	computation_time = t() - start_time
@@ -142,7 +142,7 @@ def exercise_1(mesh, relzoom=1, save=False):
 	figManager.window.showMaximized()
 
 	if save:
-		figure_filename = re.sub(r'[\_\$]', r'', title ) + '.pdf'
+		figure_filename = 'Potential in the x Direction Along Different Axes.pdf'
 		plt.savefig(figure_filename, bbox_inches='tight')
 		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
 		print("Saved figure to", f)
@@ -203,7 +203,7 @@ if __name__=="__main__":
 	print("2. Exercise 2")
 	choice = input("Enter [1] or [2]: ")
 	if choice == "1":
-		exercise_1(mesh)
+		exercise_1(mesh, save=True)
 	elif choice == "2":
 		pass
 	else:
