@@ -138,7 +138,7 @@ def exercise_1(mesh, relzoom=1):
 	if save == "Y":
 		figure_filename = 'Plots/Potential in the x Direction Along Different Axes.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -173,7 +173,7 @@ def exercise_2(mesh, relzoom=1):
 	if save == "Y":
 		figure_filename = 'Plots/Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -195,7 +195,7 @@ def exercise_2(mesh, relzoom=1):
 	if save == "Y":
 		figure_filename = 'Plots/Percent Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -224,13 +224,25 @@ def plot_3D(mesh, z_index):
 	Z = f_vect(X, Y)
 
 
-	fig = plt.figure(figsize=(20,10))
+	fig = plt.figure(figsize=(40,20))
 	ax = plt.axes(projection="3d")
 	ax.plot_surface(X, Y, Z,  rstride=1, cstride=1, cmap='magma', edgecolor=None)
 	ax.set(xlabel="x", ylabel="y", zlabel="V(x, y)", title="Potential on the $Z=" + str(z[z_index]) + "$ Plane")
+		
+	save = input("Do you want to save the plot? [Y/n] ")
+
+	if save == "Y":
+		figure_filename = 'Plots/Potential on the Z=' + str(z[z_index]) + ' Plane.pdf'
+		plt.savefig(figure_filename)
+		f = os.path.dirname(os.path.realpath(__file__)) + figure_filename
+		print("Saved figure to", f)
+	
+	
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
 	plt.show()
 
-def plot_contours(mesh, z_index):
+def plot_contours(mesh, z_index, levels, relzoom=1):
 	x = np.linspace(x_min, x_max, num=Mx)
 	y = np.linspace(y_min, y_max, num=My)
 	z = np.linspace(z_min, z_max, num=Mz)
@@ -242,59 +254,39 @@ def plot_contours(mesh, z_index):
 	Z = f_vect(X, Y)
 
 
-	fig = plt.figure(figsize=(20,10))
-	ax = plt.axes(projection="3d")
-	ax.plot_surface(X, Y, Z,  rstride=1, cstride=1, cmap='magma', edgecolor=None)
-	ax.set(xlabel="x", ylabel="y", zlabel="V(x, y)", title="Potential on the $Z=" + str(z[z_index]) + "$ Plane")
+	fig = plt.figure(figsize=[relzoom*13.,relzoom*7.])
+	ax = plt.axes()
+	ax.contour(X, Y, Z, levels)
+	ax.set(xlabel="x", ylabel="y", title="Potential Levels on the $Z=" + str(z[z_index]) + "$ Plane")
+
+	save = input("Do you want to save the plot? [Y/n] ")
+
+	if save == "Y":
+		figure_filename = 'Plots/Potential Levels on the Z=' + str(z[z_index]) + ' Plane.pdf'
+		plt.savefig(figure_filename)
+		f = os.path.dirname(os.path.realpath(__file__)) + figure_filename
+		print("Saved figure to", f)
+	
+	
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
 	plt.show()
 
 def exercise_3(mesh, relzoom=1):
 	mesh_center = find_center(mesh)
 	z_index = mesh_center[2]
+	levels = [float(i) for i in range(-4, 10)]
 
-	pot_in_xy_plane = mesh[::z_index]
+	print("Generating 3D plot of the potential in the plane Z = 0...")
+	plot_3D(mesh, z_index)
 
-	contours = {}
-	#potentials = [float(i) for i in range(-4, 10)]
-
-	#for pot in potentials:
-	#x_indices, y_indices, z_indices = np.where(pot_in_xy_plane == pot)
-
-	# indices = [ (j, k, l) 
-	# 	for j in range(len(mesh)) 
-	# 	for k in range(len(mesh[0]))
-	# 	for l in range(len(mesh[0][0]))
-	# 	if abs(mesh[j][k][l] - pot) < 1e-3
-	# ]
-
-	#indices = mesh[ abs(mesh - pot) < 1e-2]
-	pot = -1
-	indices = np.where( (mesh-pot < 1e-3) & (mesh-pot > 0) )
-	#indices = [(indices[0][i], indices[1][i], indices[2][i]) for i in range(len(indices[0]))]
-
+	print("Generating Levels plot of the potential in the plane Z = 0...")
+	plot_contours(mesh, z_index, levels)
 	
-	x_indices = indices[0]
-	y_indices = indices[1]
-	z_indices = indices[2]
-
-	for i in range(len(x_indices)):
-		print(mesh[x_indices[i], y_indices[i], z_indices[i]])
-	
-	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
-	ax.scatter(x_indices, y_indices)
-	figManager = plt.get_current_fig_manager()
-	figManager.window.showMaximized()
-	plt.show()	
-
-	#print(x_indices, y_indices, z_indices)
-	#contours[pot] = pot_in_xy_plane
-
-
-
 			
 
 # MAIN FUNCTION
-if __name__=="__main__1":
+if __name__=="__main__":
 	print("Choose an option:")
 	print("1. Compute the potential matrix from scratch")
 	print("2. Import the potential matrix from a file")
@@ -321,6 +313,6 @@ if __name__=="__main__1":
 	else:
 		print("Invalid Choice")
 
-if __name__=="__main__":
+if __name__=="__main__2":
 	mesh = import_matrix()
 	exercise_3(mesh)
