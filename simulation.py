@@ -136,9 +136,9 @@ def exercise_1(mesh, relzoom=1):
 	save = input("Do you want to save the plot? [Y/n] ")
 
 	if save == "Y":
-		figure_filename = 'Potential in the x Direction Along Different Axes.pdf'
+		figure_filename = 'Plots/Potential in the x Direction Along Different Axes.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -171,9 +171,9 @@ def exercise_2(mesh, relzoom=1):
 	save = input("Do you want to save the plot? [Y/n] ")
 
 	if save == "Y":
-		figure_filename = 'Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
+		figure_filename = 'Plots/Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -193,9 +193,9 @@ def exercise_2(mesh, relzoom=1):
 	save = input("Do you want to save the plot? [Y/n] ")
 
 	if save == "Y":
-		figure_filename = 'Percent Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
+		figure_filename = 'Plots/Percent Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
 		plt.savefig(figure_filename)
-		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		f = os.path.dirname(os.path.realpath(__file__)) + "/Plots/" + figure_filename
 		print("Saved figure to", f)
 	
 	figManager = plt.get_current_fig_manager()
@@ -212,11 +212,89 @@ def exercise_2(mesh, relzoom=1):
 	
 	print("The percentage difference at the left edge of the finite capacitor is", round( percent_difference[np.where(y_axis==ymin)[0][0]] , 2), "%")
 
+def plot_3D(mesh, z_index):
+	x = np.linspace(x_min, x_max, num=Mx)
+	y = np.linspace(y_min, y_max, num=My)
+	z = np.linspace(z_min, z_max, num=Mz)
+	
+	X, Y = np.meshgrid(x, y)
+	f = lambda x_val, y_val: mesh[np.where(x==x_val)[0][0], np.where(y==y_val)[0][0], z_index]
+
+	f_vect = np.vectorize(f)
+	Z = f_vect(X, Y)
+
+
+	fig = plt.figure(figsize=(20,10))
+	ax = plt.axes(projection="3d")
+	ax.plot_surface(X, Y, Z,  rstride=1, cstride=1, cmap='magma', edgecolor=None)
+	ax.set(xlabel="x", ylabel="y", zlabel="V(x, y)", title="Potential on the $Z=" + str(z[z_index]) + "$ Plane")
+	plt.show()
+
+def plot_contours(mesh, z_index):
+	x = np.linspace(x_min, x_max, num=Mx)
+	y = np.linspace(y_min, y_max, num=My)
+	z = np.linspace(z_min, z_max, num=Mz)
+	
+	X, Y = np.meshgrid(x, y)
+	f = lambda x_val, y_val: mesh[np.where(x==x_val)[0][0], np.where(y==y_val)[0][0], z_index]
+
+	f_vect = np.vectorize(f)
+	Z = f_vect(X, Y)
+
+
+	fig = plt.figure(figsize=(20,10))
+	ax = plt.axes(projection="3d")
+	ax.plot_surface(X, Y, Z,  rstride=1, cstride=1, cmap='magma', edgecolor=None)
+	ax.set(xlabel="x", ylabel="y", zlabel="V(x, y)", title="Potential on the $Z=" + str(z[z_index]) + "$ Plane")
+	plt.show()
+
+def exercise_3(mesh, relzoom=1):
+	mesh_center = find_center(mesh)
+	z_index = mesh_center[2]
+
+	pot_in_xy_plane = mesh[::z_index]
+
+	contours = {}
+	#potentials = [float(i) for i in range(-4, 10)]
+
+	#for pot in potentials:
+	#x_indices, y_indices, z_indices = np.where(pot_in_xy_plane == pot)
+
+	# indices = [ (j, k, l) 
+	# 	for j in range(len(mesh)) 
+	# 	for k in range(len(mesh[0]))
+	# 	for l in range(len(mesh[0][0]))
+	# 	if abs(mesh[j][k][l] - pot) < 1e-3
+	# ]
+
+	#indices = mesh[ abs(mesh - pot) < 1e-2]
+	pot = -1
+	indices = np.where( (mesh-pot < 1e-3) & (mesh-pot > 0) )
+	#indices = [(indices[0][i], indices[1][i], indices[2][i]) for i in range(len(indices[0]))]
+
+	
+	x_indices = indices[0]
+	y_indices = indices[1]
+	z_indices = indices[2]
+
+	for i in range(len(x_indices)):
+		print(mesh[x_indices[i], y_indices[i], z_indices[i]])
+	
+	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
+	ax.scatter(x_indices, y_indices)
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
+	plt.show()	
+
+	#print(x_indices, y_indices, z_indices)
+	#contours[pot] = pot_in_xy_plane
+
+
 
 			
 
 # MAIN FUNCTION
-if __name__=="__main__":
+if __name__=="__main__1":
 	print("Choose an option:")
 	print("1. Compute the potential matrix from scratch")
 	print("2. Import the potential matrix from a file")
@@ -232,14 +310,17 @@ if __name__=="__main__":
 	print("\nChoose an option:")
 	print("1. Exercise 1")
 	print("2. Exercise 2")
-	choice = input("Enter [1] or [2]: ")
+	print("3. Exercise 3")
+	choice = input("Enter [1], [2] or [3]: ")
 	if choice == "1":
 		exercise_1(mesh)
 	elif choice == "2":
 		exercise_2(mesh)
+	elif choice == "3":
+		exercise_3(mesh)
 	else:
 		print("Invalid Choice")
 
-if __name__=="__main__2":
+if __name__=="__main__":
 	mesh = import_matrix()
-	exercise_2(mesh)
+	exercise_3(mesh)
