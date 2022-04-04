@@ -1,7 +1,5 @@
 from initial_parameters import *
 import numpy as np
-import re
-from numba import jit, njit
 from time import time as t
 import matplotlib.pyplot as plt
 import os
@@ -148,8 +146,74 @@ def exercise_1(mesh, relzoom=1):
 	plt.show()
 
 def exercise_2(mesh, relzoom=1):
-	pass
+	mesh_center = find_center(mesh)
+	x_index = mesh_center[0]
+	z_index = mesh_center[2]
 	
+	y_axis = np.linspace(y_min, y_max, num=My)
+
+	pot_finite = mesh[x_index, :, z_index]	
+	pot_infinite = np.ones_like(pot_finite) * infinite_ppc_potential(0) 
+
+	difference = pot_finite-pot_infinite
+	percent_difference = np.absolute( difference / pot_infinite ) * 100
+
+	# PLOT DIFFERENCE
+	print("Plotting difference...")
+	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
+	ax.plot(y_axis, difference, color="blue")
+
+	ax.axvspan(ymin, ymax, alpha=0.3, color='blue')
+	ax.set_title("Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis")
+	ax.set_xlabel("y (cm)")
+	ax.set_ylabel("Percent Difference (%)")
+
+	save = input("Do you want to save the plot? [Y/n] ")
+
+	if save == "Y":
+		figure_filename = 'Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
+		plt.savefig(figure_filename)
+		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		print("Saved figure to", f)
+	
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
+	plt.show()	
+
+	# PLOT PERCENT DIFFERENCE
+	print("Plotting percent difference...")
+	fig, ax = plt.subplots(figsize=[relzoom*13.,relzoom*7.])
+	ax.plot(y_axis, percent_difference, color="red")
+
+	ax.axvspan(ymin, ymax, alpha=0.3, color='blue')
+	ax.set_title("Percent Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis")
+	ax.set_xlabel("y (cm)")
+	ax.set_ylabel("Percent Difference (%)")
+
+	save = input("Do you want to save the plot? [Y/n] ")
+
+	if save == "Y":
+		figure_filename = 'Percent Difference Between the Potential of the Finite and Infinite PPCs Along the OY Axis.pdf'
+		plt.savefig(figure_filename)
+		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
+		print("Saved figure to", f)
+	
+	figManager = plt.get_current_fig_manager()
+	figManager.window.showMaximized()
+	plt.show()
+
+	boundary = 10000000
+	tolerance = 10
+	for i in range(np.where(y_axis==0.)[0][0], len(y_axis)):
+		if percent_difference[i] > tolerance:
+			boundary = y_axis[i]
+			print("The distance from the origin along the Y axis beyond which the difference is larger than", tolerance, "% is", round(boundary, 4), "cm")
+			break
+	
+	print("The percentage difference at the left edge of the finite capacitor is", round( percent_difference[np.where(y_axis==ymin)[0][0]] , 2), "%")
+
+
+			
 
 # MAIN FUNCTION
 if __name__=="__main__":
