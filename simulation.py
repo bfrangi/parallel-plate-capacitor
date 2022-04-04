@@ -112,11 +112,11 @@ def infinite_ppc_potential(x):
 	else:
 		return V2
 
-def exercise_1(mesh, relzoom=1, save=False):
+def exercise_1(mesh, relzoom=1):
 	mesh_center = find_center(mesh)
 	axes = [
 		(mesh_center[1], mesh_center[2], "O", "blue"), 
-		(mesh_center[1], int((ymax-y_min)/Dy), "A", "red"), 
+		(int((ymax-y_min)/Dy), mesh_center[2], "A", "red"), 
 		(mesh_center[1], int((zmax-z_min)/Dz), "B", "green")
 	]
 	x = np.linspace(x_min, x_max, num=Mx)
@@ -137,14 +137,14 @@ def exercise_1(mesh, relzoom=1, save=False):
 
 	figManager = plt.get_current_fig_manager()
 	figManager.window.showMaximized()
+	plt.show()
+	save = input("Do you want to save the plot? [Y/n] ")
 
-	if save:
+	if save == "Y":
 		figure_filename = 'Potential in the x Direction Along Different Axes.pdf'
 		plt.savefig(figure_filename, bbox_inches='tight')
 		f = os.path.dirname(os.path.realpath(__file__)) + "/" + figure_filename
 		print("Saved figure to", f)
-	
-	plt.show()
 
 def exercise_2(mesh, relzoom=1, save=False):
 	mesh_center = find_center(mesh)
@@ -200,9 +200,9 @@ if __name__=="__main__":
 	print("2. Exercise 2")
 	choice = input("Enter [1] or [2]: ")
 	if choice == "1":
-		exercise_1(mesh, save=True)
+		exercise_1(mesh)
 	elif choice == "2":
-		pass
+		exercise_2(mesh)
 	else:
 		print("Invalid Choice")
 
