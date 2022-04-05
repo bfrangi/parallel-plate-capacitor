@@ -256,8 +256,13 @@ def plot_contours(mesh, z_index, levels, relzoom=1):
 
 	fig = plt.figure(figsize=[relzoom*13.,relzoom*7.])
 	ax = plt.axes()
-	ax.contour(X, Y, Z, levels)
-	ax.set(xlabel="x", ylabel="y", title="Potential Levels on the $Z=" + str(z[z_index]) + "$ Plane")
+	CS = ax.contour(X, Y, Z, levels)
+	CB = fig.colorbar(CS, ticks=levels)
+	plt.clabel(CS, inline=True, fontsize=7)
+	
+	plt.ylim([y_min,y_max])
+	plt.ylim([x_min,x_max])
+	ax.set(xlabel="x", ylabel="y", title="Potential levels on the $Z=" + str(z[z_index]) + "$ Plane")
 
 	save = input("Do you want to save the plot? [Y/n] ")
 
@@ -277,8 +282,8 @@ def exercise_3(mesh, relzoom=1):
 	z_index = mesh_center[2]
 	levels = [float(i) for i in range(-4, 10)]
 
-	print("Generating 3D plot of the potential in the plane Z = 0...")
-	plot_3D(mesh, z_index)
+	#print("Generating 3D plot of the potential in the plane Z = 0...")
+	#plot_3D(mesh, z_index)
 
 	print("Generating Levels plot of the potential in the plane Z = 0...")
 	plot_contours(mesh, z_index, levels)
