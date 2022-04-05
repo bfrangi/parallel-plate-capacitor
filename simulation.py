@@ -282,13 +282,11 @@ def exercise_3(mesh, relzoom=1):
 	z_index = mesh_center[2]
 	levels = [float(i) for i in range(-4, 10)]
 
-	#print("Generating 3D plot of the potential in the plane Z = 0...")
-	#plot_3D(mesh, z_index)
+	print("Generating 3D plot of the potential in the plane Z = 0...")
+	plot_3D(mesh, z_index)
 
 	print("Generating Levels plot of the potential in the plane Z = 0...")
 	plot_contours(mesh, z_index, levels)
-	
-			
 
 # MAIN FUNCTION
 if __name__=="__main__":
