@@ -212,7 +212,7 @@ def exercise_2(mesh, relzoom=1):
 	
 	print("The percentage difference at the left edge of the finite capacitor is", round( percent_difference[np.where(y_axis==ymin)[0][0]] , 2), "%")
 
-def plot_3D(mesh, z_index):
+def plot_3D(mesh, z_index, relzoom):
 	x = np.linspace(x_min, x_max, num=Mx)
 	y = np.linspace(y_min, y_max, num=My)
 	z = np.linspace(z_min, z_max, num=Mz)
@@ -224,7 +224,7 @@ def plot_3D(mesh, z_index):
 	Z = f_vect(X, Y)
 
 
-	fig = plt.figure(figsize=(40,20))
+	fig = plt.figure(figsize=(relzoom*13,relzoom*7))
 	ax = plt.axes(projection="3d")
 	ax.plot_surface(X, Y, Z,  rstride=1, cstride=1, cmap='magma', edgecolor=None)
 	ax.set(xlabel="x", ylabel="y", zlabel="V(x, y)", title="Potential on the $Z=" + str(z[z_index]) + "$ Plane")
@@ -283,10 +283,10 @@ def exercise_3(mesh, relzoom=1):
 	levels = [float(i) for i in range(-4, 10)]
 
 	print("Generating 3D plot of the potential in the plane Z = 0...")
-	plot_3D(mesh, z_index)
+	plot_3D(mesh, z_index, relzoom=relzoom)
 
 	print("Generating Levels plot of the potential in the plane Z = 0...")
-	plot_contours(mesh, z_index, levels)
+	plot_contours(mesh, z_index, levels, relzoom=relzoom)
 
 # MAIN FUNCTION
 if __name__=="__main__":
@@ -307,15 +307,12 @@ if __name__=="__main__":
 	print("2. Exercise 2")
 	print("3. Exercise 3")
 	choice = input("Enter [1], [2] or [3]: ")
+	print("")
 	if choice == "1":
 		exercise_1(mesh, relzoom=0.9)
 	elif choice == "2":
 		exercise_2(mesh)
 	elif choice == "3":
-		exercise_3(mesh)
+		exercise_3(mesh, relzoom=0.9)
 	else:
 		print("Invalid Choice")
-
-if __name__=="__main__2":
-	mesh = import_matrix()
-	exercise_3(mesh)
