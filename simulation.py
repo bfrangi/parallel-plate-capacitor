@@ -11,7 +11,7 @@ def create_mesh():
 	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
 	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
 	
-	mesh = np.zeros((Mx, My, Mz))
+	mesh = np.ones((Mx, My, Mz)) * Vbox
 	mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
 	mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
 
@@ -29,7 +29,7 @@ def update_potential(mesh):
 	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
 	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
 
-	new_mesh = np.zeros((Mx, My, Mz))
+	new_mesh = np.ones((Mx, My, Mz)) * Vbox
 	new_mesh[1:Mx-1, 1: My-1,1:Mz-1] = (mesh[0:Mx-2, 1: My-1,1:Mz-1] + \
 										mesh[2:Mx, 1: My-1,1:Mz-1] + \
 										mesh[1:Mx-1, 0: My-2,1:Mz-1] + \
