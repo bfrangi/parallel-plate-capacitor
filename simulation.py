@@ -308,7 +308,7 @@ if __name__=="__main__":
 	print("3. Exercise 3")
 	choice = input("Enter [1], [2] or [3]: ")
 	if choice == "1":
-		exercise_1(mesh)
+		exercise_1(mesh, relzoom=0.9)
 	elif choice == "2":
 		exercise_2(mesh)
 	elif choice == "3":
