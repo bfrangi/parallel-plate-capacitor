@@ -16,8 +16,7 @@ def create_mesh():
 	x = np.linspace(x_min, x_max, num=Mx)
 	for i in range(plate1_x+1,plate2_x):
 		mesh[i, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.ones((plates_y[1] - plates_y[0], plates_z[1] - plates_z[0])) * infinite_ppc_potential(x[i])
-	plot_3D(mesh, find_center(mesh)[2])
-
+	
 	mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
 	mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
 
