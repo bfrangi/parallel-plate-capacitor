@@ -12,6 +12,12 @@ def create_mesh():
 	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
 	
 	mesh = np.ones((Mx, My, Mz)) * Vbox
+
+	x = np.linspace(x_min, x_max, num=Mx)
+	for i in range(plate1_x+1,plate2_x):
+		mesh[i, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.ones((plates_y[1] - plates_y[0], plates_z[1] - plates_z[0])) * infinite_ppc_potential(x[i])
+	plot_3D(mesh, find_center(mesh)[2])
+
 	mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
 	mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
 
@@ -57,9 +63,6 @@ def import_matrix(filename='potential_matrix.npy'):
 def compute_potential_matrix(save=True):
 	# CREATE SPACE AND TIME VECTORS
 	time = t()
-	x = np.linspace(x_min, x_max, num=Mx)
-	y = np.linspace(y_min, y_max, num=My)
-	z = np.linspace(z_min, z_max, num=Mz)
 	print("\nCreated x, y, z vectors. Time taken:", t()-time, "s")
 
 	# CREATE INITIAL VECTOR MATRIX
@@ -212,7 +215,7 @@ def exercise_2(mesh, relzoom=1):
 	
 	print("The percentage difference at the left edge of the finite capacitor is", round( percent_difference[np.where(y_axis==ymin)[0][0]] , 2), "%")
 
-def plot_3D(mesh, z_index, relzoom):
+def plot_3D(mesh, z_index, relzoom=1):
 	x = np.linspace(x_min, x_max, num=Mx)
 	y = np.linspace(y_min, y_max, num=My)
 	z = np.linspace(z_min, z_max, num=Mz)
