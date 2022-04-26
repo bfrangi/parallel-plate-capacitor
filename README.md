@@ -18,7 +18,11 @@ To run this code on your system you will need:
 
 - Python version: Python 3 (specifically, this was done using version 3.8.5).
 
-- Manual installation of these python packages: ```matplotlib``` and ```numpy```.
+- Manual installation of these python packages: ```matplotlib```, ```numpy``` and ```pytorch```. These can be installed with:
+
+```
+pip3 install matplotlib numpy torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
+```
 
 
  
