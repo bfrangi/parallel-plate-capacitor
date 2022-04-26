@@ -3,7 +3,7 @@ import numpy as np
 from time import time as t
 import matplotlib.pyplot as plt
 import os
-
+import torch
 
 def create_mesh():
 	plate1_x = int((x1-x_min)/Dx)
@@ -28,13 +28,10 @@ def find_center(mesh):
 	z_len = len(mesh[0, 0, :])
 	return (int(x_len/2), int(y_len/2), int(z_len/2))
 
-def update_potential(mesh):
-	plate1_x = int((x1-x_min)/Dx)
-	plate2_x = int((x2-x_min)/Dx)
-	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
-	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
+#@torch.jit.script
+def update_potential(mesh, plate1_x, plate2_x, plates_y, plates_z):
 
-	new_mesh = np.ones((Mx, My, Mz)) * Vbox
+	new_mesh = torch.ones((Mx, My, Mz)) * Vbox
 	new_mesh[1:Mx-1, 1: My-1,1:Mz-1] = (mesh[0:Mx-2, 1: My-1,1:Mz-1] + \
 										mesh[2:Mx, 1: My-1,1:Mz-1] + \
 										mesh[1:Mx-1, 0: My-2,1:Mz-1] + \
@@ -42,9 +39,9 @@ def update_potential(mesh):
 										mesh[1:Mx-1, 1: My-1,0:Mz-2] + \
 										mesh[1:Mx-1, 1: My-1,2:Mz])/6
 
-	new_mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1)
-	new_mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2)
-	max_res = np.amax(np.absolute(mesh - new_mesh))
+	new_mesh[plate1_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = torch.tensor(np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V1))
+	new_mesh[plate2_x, plates_y[0]:plates_y[1], plates_z[0]:plates_z[1]] = torch.tensor(np.full(shape=(int((ymax- ymin)/Dy + 1), int((zmax- zmin)/Dz + 1)), fill_value=V2))
+	max_res = float(torch.amax(torch.absolute(mesh - new_mesh)))
 
 	return new_mesh, max_res
 
@@ -74,16 +71,21 @@ def compute_potential_matrix(save=True):
 	residual = 1000# (any value different to the prev_residual)
 	iteration_number = 2
 
+	mesh = torch.tensor(mesh)
 	# ITERATE TO UPDATE POTENTIAL
+	plate1_x = int((x1-x_min)/Dx)
+	plate2_x = int((x2-x_min)/Dx)
+	plates_y = (int((ymin-y_min)/Dy), int((ymax-y_min)/Dy) + 1)
+	plates_z = (int((zmin-z_min)/Dz), int((zmax-z_min)/Dz) + 1)
 	start_time = t()
 	print("\n1. Computing relaxation of potential...")
-	mesh, residual = update_potential(mesh)
+	mesh, residual = update_potential(mesh, plate1_x, plate2_x, plates_y, plates_z)
 
 	while not (residual < Rtol) and residual != prev_residual:
 		prev_residual = residual
 		print(iteration_number, "- Computing relaxation of potential... ( Previous Residual:", round(prev_residual, 3),")")
 		iteration_number += 1
-		mesh, residual = update_potential(mesh)
+		mesh, residual = update_potential(mesh, plate1_x, plate2_x, plates_y, plates_z)
 	
 	computation_time = t() - start_time
 	print("Done. Final Residual: " + str(round(residual, 3)))
