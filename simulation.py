@@ -306,6 +306,7 @@ if __name__=="__main__":
 		print("Invalid Choice. Importing matrix.")
 		mesh = import_matrix()
 
+	mesh = np.array(mesh)
 	print("\nChoose an option:")
 	print("1. Exercise 1")
 	print("2. Exercise 2")
