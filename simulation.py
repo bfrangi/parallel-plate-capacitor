@@ -32,6 +32,9 @@ def find_center(mesh):
 def update_potential(mesh, plate1_x, plate2_x, plates_y, plates_z):
 
 	new_mesh = torch.ones((Mx, My, Mz)) * Vbox
+	if torch.cuda.is_available():
+		device = torch.device('cuda') # create a device handle
+		new_mesh = new_mesh.to(device) # pass device handle created.
 	new_mesh[1:Mx-1, 1: My-1,1:Mz-1] = (mesh[0:Mx-2, 1: My-1,1:Mz-1] + \
 										mesh[2:Mx, 1: My-1,1:Mz-1] + \
 										mesh[1:Mx-1, 0: My-2,1:Mz-1] + \
@@ -72,6 +75,9 @@ def compute_potential_matrix(save=True):
 	iteration_number = 2
 
 	mesh = torch.tensor(mesh)
+	if torch.cuda.is_available():
+		device = torch.device('cuda') # create a device handle
+		mesh = mesh.to(device) # pass device handle created.
 	# ITERATE TO UPDATE POTENTIAL
 	plate1_x = int((x1-x_min)/Dx)
 	plate2_x = int((x2-x_min)/Dx)
@@ -89,6 +95,8 @@ def compute_potential_matrix(save=True):
 	
 	computation_time = t() - start_time
 	print("Done. Final Residual: " + str(round(residual, 3)))
+	if torch.cuda.is_available():
+		mesh = mesh.cpu()
 
 	# PRINT REASON FOR ENDING ALGORITHM
 	if (residual < Rtol):
