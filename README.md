@@ -1,5 +1,7 @@
 # Finite Parallel Plate Capacitor Simulation
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14571954.svg)](https://doi.org/10.5281/zenodo.14571954)
+
 Code for _Numerical Simulation of a Finite Parallel Plate Capacitor_ developed for an *Electromagnetism and Optics* course of the UC3M *Physics Engineering* degree.
 
 ## Contents
@@ -32,5 +34,16 @@ Run the simulations with:
 python3 simulation.py
 ```
 
+## Cite this repository
 
- 
+```bibtex
+@software{bernat_frangi_2024_14571954,
+  author       = {Bernat Frangi},
+  title        = {Finite Parallel Plate Capacitor Simulation},
+  month        = 12,
+  year         = 2024,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.14571954},
+  url          = {https://doi.org/10.5281/zenodo.14571954},
+}
+``` 
