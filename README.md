@@ -1,5 +1,6 @@
 # Finite Parallel Plate Capacitor Simulation
-Numerical simulation in *Electromagnetism* course of *Physics Engineering* degree.
+
+Code for _Numerical Simulation of a Finite Parallel Plate Capacitor_ developed for an *Electromagnetism and Optics* course of the UC3M *Physics Engineering* degree.
 
 ## Contents
 
