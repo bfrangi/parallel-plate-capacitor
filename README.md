@@ -24,6 +24,13 @@ To run this code on your system you will need:
 ```
 pip3 install matplotlib numpy torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113
 ```
+## Run
+
+Run the simulations with:
+
+```
+python3 simulation.py
+```
 
 
  
