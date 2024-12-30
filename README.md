@@ -12,7 +12,8 @@ The program ```simulation.py``` generates the file ```potential_matrix.npy```, w
 
 The lab report is located at ```Documents/Lab Report.pdf```
 
-## Clone this repository
+## Clone
+
 First, make sure you have installed ```git``` on your system (info on how to install [here](https://github.com/git-guides/install-git)). Then, run ```git clone https://github.com/bfrangi/parallel-plate-capacitor.git``` to clone this repository into your current working directory.
 
 ## Requirements
